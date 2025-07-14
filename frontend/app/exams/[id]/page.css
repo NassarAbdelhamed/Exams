@@ -201,3 +201,10 @@
   animation: fadeInScale 0.5s ease-in-out;
 }
 
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  color: #666;
+}
+
+

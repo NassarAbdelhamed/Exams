@@ -38,6 +38,11 @@ export default function Page() {
   };
 
   const handleSubmit = async () => {
+    if (Object.keys(selectedAnswers).length !== data.length) {
+      alert('Please answer all questions before submitting.');
+      return;
+    }
+
     try {
       const answers = Object.entries(selectedAnswers).map(([questionId, answer]) => ({
         questionId,
@@ -78,6 +83,7 @@ export default function Page() {
 
   return (
     <div className="page-container">
+      {/* Show questions if not submitted or if reviewing */}
       {(!results || reviewing) &&
         data.map((q) => (
           <Question 
@@ -123,7 +129,16 @@ export default function Page() {
       {/* Button section */}
       <div className="button-group">
         {!results && (
-          <button className="submit-button" onClick={handleSubmit}>
+          <button
+            className="submit-button"
+            onClick={handleSubmit}
+            disabled={Object.keys(selectedAnswers).length !== data.length}
+            title={
+              Object.keys(selectedAnswers).length !== data.length
+                ? 'Please answer all questions'
+                : ''
+            }
+          >
             Submit Answers
           </button>
         )}

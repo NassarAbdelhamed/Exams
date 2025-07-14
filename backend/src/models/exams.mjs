@@ -5,6 +5,9 @@ const examSchema= new mongoose.Schema({
         type:String,
         require:true,
         unique: true
+    },
+    des:{
+        type:String
     }
 })
 

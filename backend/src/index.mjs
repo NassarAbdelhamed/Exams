@@ -1,5 +1,6 @@
 import express, { json } from 'express'
 import mongodb from './conf/db.mjs'
+import cors from 'cors'
 import Exam from './models/exams.mjs'
 import question from './models/question.mjs'
 const app = express()
@@ -7,6 +8,7 @@ const app = express()
 app.use(express.json())
 mongodb()
 
+app.use(cors())
 app.get('/exams', async (req, res) => {
     try {
         const exams = await Exam.find()
@@ -59,27 +61,23 @@ app.post('/questions',async(req,res)=>{
 
     app.post('/check-answers', async (req, res) => {
     try {
-        const { answers } = req.body; // Expects array of {questionId, answer}
+        const { answers } = req.body;
         
         if (!Array.isArray(answers)) {
             return res.status(400).json({ error: 'Input must be an array of answers' });
         }
 
-        // Get all question IDs from the submission
         const questionIds = answers.map(a => a.questionId);
 
-        // Find all questions in one query
         const questions = await question.find({
             _id: { $in: questionIds }
         });
 
-        // Create a map for quick lookup
         const questionMap = {};
         questions.forEach(q => {
             questionMap[q._id.toString()] = q;
         });
 
-        // Check each answer
         let correctCount = 0;
         const results = answers.map(submission => {
             const question = questionMap[submission.questionId];
@@ -91,13 +89,16 @@ app.post('/questions',async(req,res)=>{
                 };
             }
 
-            const isCorrect = question.correct_answer === submission.answer;
+            // Fixed: Using 'correct' instead of 'correct_answer'
+            const isCorrect = String(question.correct).trim().toLowerCase() === 
+                             String(submission.answer).trim().toLowerCase();
+            
             if (isCorrect) correctCount++;
             
             return {
                 questionId: submission.questionId,
                 correct: isCorrect,
-                correctAnswer: question.correct_answer,
+                correctAnswer: question.correct,
                 userAnswer: submission.answer
             };
         });
@@ -118,7 +119,17 @@ app.post('/questions',async(req,res)=>{
         });
     }
 });
-    
-const Ports = process.env.Port || 3000
+app.get('/reset',async (req,res)=>{
+    try{
+        await Exam.deleteMany()
+        await question.deleteMany()
+        res.status(200).send('deleted')
+    }
+    catch(err){
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+const Ports = process.env.Port || 5000
 
 app.listen(Ports, () => { console.log(`server is on on port ${Ports}`) })

@@ -1,10 +1,11 @@
 import React from 'react'
+import './cart.css'
 
-function Cart({prop}) {
+function Cart({ prop }) {
   return (
-    <div>
-        <h1>{prop.sub}</h1>
-        <p>{prop.des}</p>
+    <div className="cart"> 
+      <h1 className="cart__heading">{prop.sub}</h1>
+      <p className="cart__description">{prop.des}</p>
     </div>
   )
 }

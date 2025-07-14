@@ -1,11 +1,9 @@
-// app/component/question.js
 import { useState } from 'react';
+import './questions.css';
 
 export default function Question({ header, correct, wrong1, wrong2, wrong3 }) {
-  // Combine all answers and shuffle them
   const [shuffledAnswers] = useState(() => {
     const answers = [correct, wrong1, wrong2, wrong3];
-    // Fisher-Yates shuffle algorithm
     for (let i = answers.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [answers[i], answers[j]] = [answers[j], answers[i]];
@@ -14,16 +12,15 @@ export default function Question({ header, correct, wrong1, wrong2, wrong3 }) {
   });
 
   return (
-    <div >
-      <h3 >{header}</h3>
+    <div className="question-container">
+      <h3>{header}</h3>
       <div>
         {shuffledAnswers.map((answer, index) => (
-          <label key={index} style={{ display: 'flex', alignItems: 'center' }}>
+          <label key={index} className="answer-option">
             <input 
               type="radio" 
               name={`answer-${header}`} 
               value={answer}
-              style={{ marginRight: '10px' }}
             />
             {answer}
           </label>

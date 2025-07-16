@@ -49,3 +49,12 @@
   margin-right: 12px;
   cursor: pointer;
 }
+.question-number {
+  font-weight: bold;
+  color: #0070f3;
+  margin-right: 8px;
+}
+.question-container.review-mode {
+  background-color: #fdfde7;
+  border-color: #ffeaa7;
+}

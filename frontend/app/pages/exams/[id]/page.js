@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Question from '@/app/component/question';
 import './page.css';
 
 export default function Page() {
@@ -17,7 +18,7 @@ export default function Page() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/find/${params.id}`);
+        const response = await fetch(`http://localhost:5000/questions/${params.id}`);
         if (!response.ok) throw new Error('Request failed');
         const result = await response.json();
         setData(Array.isArray(result) ? result : [result]);
@@ -38,18 +39,18 @@ export default function Page() {
   };
 
   const handleSubmit = async () => {
-    if (Object.keys(selectedAnswers).length !== data.length) {
+    if (!data || Object.keys(selectedAnswers).length !== data.length) {
       alert('Please answer all questions before submitting.');
       return;
     }
 
     try {
-      const answers = Object.entries(selectedAnswers).map(([questionId, answer]) => ({
-        questionId,
-        answer
+      const answers = data.map(q => ({
+        questionId: q._id,
+        answer: selectedAnswers[q._id]
       }));
 
-      const response = await fetch('http://localhost:5000/check-answers', {
+      const response = await fetch('http://localhost:5000/exam/check-answers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,9 +86,10 @@ export default function Page() {
     <div className="page-container">
       {/* Show questions if not submitted or if reviewing */}
       {(!results || reviewing) &&
-        data.map((q) => (
-          <Question 
+        data.map((q, index) => (
+          <Question
             key={q._id}
+            questionNumber={index + 1}
             questionId={q._id}
             header={q.header}
             correct={q.correct}
@@ -159,51 +161,6 @@ export default function Page() {
             </button>
           </>
         )}
-      </div>
-    </div>
-  );
-}
-
-
-function Question({ questionId, header, correct, wrong1, wrong2, wrong3, onAnswerSelect, showResult, correctAnswer, selectedAnswers }) {
-  const [shuffledAnswers] = useState(() => {
-    const answers = [correct, wrong1, wrong2, wrong3];
-    for (let i = answers.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [answers[i], answers[j]] = [answers[j], answers[i]];
-    }
-    return answers;
-  });
-
-  return (
-    <div className="question-container">
-      <h3>{header}</h3>
-      <div>
-        {shuffledAnswers.map((answer, index) => {
-          const isCorrect = answer === correctAnswer;
-          const isSelected = selectedAnswers?.[questionId] === answer;
-          const isWrong = showResult && isSelected && !isCorrect;
-
-          return (
-            <label
-              key={index}
-              className={`answer-option ${showResult && isCorrect ? 'correct-answer' : ''} ${isWrong ? 'wrong-answer' : ''}`}
-            >
-              <input
-                type="radio"
-                name={`answer-${questionId}`}
-                value={answer}
-                onChange={() => onAnswerSelect(questionId, answer)}
-                disabled={showResult}
-                checked={isSelected}
-              />
-              {answer}
-              {showResult && isCorrect && (
-                <span className="correct-answer-label"> ✅ Correct Answer</span>
-              )}
-            </label>
-          );
-        })}
       </div>
     </div>
   );
